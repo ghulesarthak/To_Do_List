@@ -1,4 +1,6 @@
 package com.example.todoapp
 
-class Route {
+object Route {
+    var UpadatePage="UpadatePage"
+    var back="back"
 }

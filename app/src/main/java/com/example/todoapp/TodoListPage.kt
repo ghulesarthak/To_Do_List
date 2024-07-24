@@ -1,6 +1,7 @@
 package com.example.todoapp
 
 
+import android.content.ClipData.Item
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -23,6 +24,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -38,16 +40,25 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.room.Update
 import java.text.SimpleDateFormat
 import java.util.Locale
+
+
+
+
 @Composable
-
 fun TodoListPage(viewModel: TodoViewModel){
-
-    val todoList by viewModel._tudoList.observeAsState()
+ val todoList by viewModel._tudoList.observeAsState()
     var inputText by remember{
         mutableStateOf("")
     }
+
+    fun upadate(editText:String){
+
+    }
+
+
     Column(
         modifier = Modifier.fillMaxHeight().padding(10.dp,50.dp,0.dp,0.dp)
     ) {
@@ -58,7 +69,7 @@ fun TodoListPage(viewModel: TodoViewModel){
         )
         {
             OutlinedTextField(value =inputText , onValueChange ={
-            inputText= it
+                inputText= it
             })
 
             Button(onClick = {
@@ -67,16 +78,7 @@ fun TodoListPage(viewModel: TodoViewModel){
             }){
                 Text(text = "Add")
             }
-            fun button(){
 
-                Button(onClick = {
-                    viewModel.addTodo(inputText)
-                    inputText=""
-                }){
-                    Text(text = "Edit")
-                }
-
-            }
         }
 
 
@@ -87,11 +89,8 @@ fun TodoListPage(viewModel: TodoViewModel){
                 content = {
                     itemsIndexed(it){
                             index: Int, item: Todo ->
-                        TodoItem(item = item, onDelete = {
-                            viewModel.deleteTodo(item.id) },
-                            onUpdate={
-                                        viewModel.updateTodo(item.id,inputText)
-                            }
+                       TodoItem(item=item, viewModel
+
                         )
 
                     }
@@ -102,15 +101,16 @@ fun TodoListPage(viewModel: TodoViewModel){
             textAlign = TextAlign.Center,
             text = "No items Yet",
             fontSize = 20.sp
-            )
+        )
 
 
     }
+
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TodoItem (item:Todo,onDelete : () -> Unit,onUpdate:()->Unit){
+fun TodoItem (item: Todo, viewModel: TodoViewModel){
     Row(
         modifier = Modifier.fillMaxWidth()
             .padding(8.dp)
@@ -121,6 +121,17 @@ fun TodoItem (item:Todo,onDelete : () -> Unit,onUpdate:()->Unit){
 
 
     ) {
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -153,7 +164,7 @@ fun TodoItem (item:Todo,onDelete : () -> Unit,onUpdate:()->Unit){
                 )},
                 confirmButton = {
                     Button(
-                        onClick = onDelete,
+                        onClick = { viewModel.deleteTodo(item.id) },
                         colors = ButtonDefaults.buttonColors(Color.Cyan)
 
                     ) {
@@ -172,18 +183,59 @@ fun TodoItem (item:Todo,onDelete : () -> Unit,onUpdate:()->Unit){
             )
         }
 
-
-        IconButton(onClick = {onUpdate},
+/*
+        IconButton(onClick = onUpdate,
             modifier = Modifier.padding(6.dp))
         {
             Icon(
-                painter = painterResource(id = R.drawable.baseline_edit_24),
+                painter = painterResource(id = R.drawable.baseline_done_24),
                 contentDescription = "Edit",
                 tint = Color.White
 
             )
 
+        }*/
+
+        var showDialog by remember { mutableStateOf(false) }
+        TextButton(onClick = { showDialog = true }, modifier = Modifier.padding(6.dp)) {
+            Text(text = "Edit", color = Color.White)
         }
+
+        // Confirmation Dialog
+
+        var editText by remember{
+            mutableStateOf("")
+        }
+
+
+
+        if (showDialog) {
+
+            AlertDialog(
+                onDismissRequest = { showDialog = false },
+                title = { Text(text = "Confirm Edit") },
+               // text = { Text("Are you sure you want to Edit this todo item?") },
+                text={ OutlinedTextField(value =editText , onValueChange ={
+                    editText= it
+                })},
+                confirmButton = {
+                    Button(onClick = {
+                        showDialog = false
+                        viewModel.updateTodo(item.id,editText)
+
+                    }) {
+                        Text("Confirm")
+                    }
+                },
+                dismissButton = {
+                    Button(onClick = { showDialog = false }) {
+                        Text("Cancel")
+                    }
+                }
+            )
+        }
+
+
 
 
 
@@ -201,5 +253,3 @@ fun TodoItem (item:Todo,onDelete : () -> Unit,onUpdate:()->Unit){
 
     }
 }
-
-
